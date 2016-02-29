@@ -1,8 +1,10 @@
 Resources framework
 ===================
 
-rfr ``<command> [<args>]``
+```bash
+rfr <command> [<args>]
 
-rfr add ``<url> <description> <tag> [<tag2>] [<tag3>]``
+rfr add <url> <description> <tag> [<tag2>] [<tag3>]
 
-rfr search ``[<search term>]``
+rfr search [<search term>]
+```
