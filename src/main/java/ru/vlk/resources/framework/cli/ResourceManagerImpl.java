@@ -40,6 +40,8 @@ public class ResourceManagerImpl implements ResourceManager {
         Path path = indexFile.toPath();
         analyzer = new StandardAnalyzer();
         index = new SimpleFSDirectory(path);
+        config = new IndexWriterConfig(analyzer);
+        w = new IndexWriter(index, config);
     }
 
     public void addResource(Resource resource) throws IOException {
@@ -63,9 +65,7 @@ public class ResourceManagerImpl implements ResourceManager {
     public Set<Resource> search(String term) throws IOException, ParseException {
         reader = DirectoryReader.open(index);
         searcher = new IndexSearcher(reader);
-        config = new IndexWriterConfig(analyzer);
-        w = new IndexWriter(index, config);
-        Query q = new QueryParser("title", analyzer).parse(term);
+        Query q = new QueryParser("description", analyzer).parse(term);
         int hitsPerPage = 10;
         TopDocs docs = searcher.search(q, hitsPerPage);
         ScoreDoc[] hits = docs.scoreDocs;
@@ -74,7 +74,7 @@ public class ResourceManagerImpl implements ResourceManager {
         for(int i=0; i < hits.length; ++i) {
             int docId = hits[i].doc;
             Document d = searcher.doc(docId);
-            System.out.println((i + 1) + ". " + d.get("isbn") + "\t" + d.get("title"));
+            System.out.println((i + 1) + ". " + d.get("description") + "\t" + d.get("url"));
             Resource resource = new Resource();
             resource.setUrl(d.get("url"));
             resource.setDescription(d.get("description"));

@@ -1,10 +1,13 @@
 package ru.vlk.resources.framework.services.impl;
 
+import com.google.common.collect.Sets;
 import ru.vlk.resources.framework.model.Command;
 import ru.vlk.resources.framework.model.Resource;
+import ru.vlk.resources.framework.model.Tag;
 import ru.vlk.resources.framework.services.ArgumentParser;
 import ru.vlk.resources.framework.util.ResourceParsingException;
 
+import java.util.HashSet;
 import java.util.Objects;
 
 public class SimpleArgumentParser implements ArgumentParser {
@@ -33,6 +36,13 @@ public class SimpleArgumentParser implements ArgumentParser {
         if (args[1] == null || args[2] == null || args[3] == null) {
             throw new ResourceParsingException();
         }
-        return null;
+        //TODO: refactor
+        Tag tag = new Tag();
+        tag.setName(args[3]);
+        Resource resource = new Resource();
+        resource.setUrl(args[1]);
+        resource.setDescription(args[2]);
+        resource.setTags(Sets.newHashSet(tag));
+        return resource;
     }
 }
