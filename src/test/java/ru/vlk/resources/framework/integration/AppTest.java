@@ -25,7 +25,23 @@ public class AppTest {
         App app = new App();
         String result = "";
 
-        String[] args = {"add", "url-test", "description-test", "test"};
+        String[] args = {
+                "add",
+                "http://blog.architexa.com/2010/11/getting-started-with-lucene-creating-an-index/",
+                "getting started with lucene",
+                "lucene"};
+        result = app.executeCommand(args);
+        assertNotEquals(result, "");
+
+        args = new String[]{
+                "add",
+                "http://www.rbc.ru/",
+                "Новостной портал РБК",
+                "рбк"};
+        result = app.executeCommand(args);
+        assertNotEquals(result, "");
+
+        args = new String[]{"search", "lucene"};
         result = app.executeCommand(args);
 
         assertNotEquals(result, "");

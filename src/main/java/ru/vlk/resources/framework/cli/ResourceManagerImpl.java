@@ -17,6 +17,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.SimpleFSDirectory;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.util.packed.DirectWriter;
 import ru.vlk.resources.framework.model.Resource;
 import ru.vlk.resources.framework.model.Tag;
 
@@ -42,6 +43,13 @@ public class ResourceManagerImpl implements ResourceManager {
         index = new SimpleFSDirectory(path);
         config = new IndexWriterConfig(analyzer);
         w = new IndexWriter(index, config);
+        if (!DirectoryReader.indexExists(index)) {
+            Document initDoc = new Document();
+            initDoc.add(new StringField("init_doc", "init_doc", Field.Store.YES));
+            w.addDocument(new Document());
+            w.commit();
+            w.close();
+        }
     }
 
     public void addResource(Resource resource) throws IOException {
@@ -89,5 +97,6 @@ public class ResourceManagerImpl implements ResourceManager {
         doc.add(new StringField("url", url, Field.Store.YES));
         tags.forEach(t -> doc.add(new StringField("tag", t, Field.Store.YES)));
         w.addDocument(doc);
+        w.commit();
     }
 }

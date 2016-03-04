@@ -1,6 +1,8 @@
 package ru.vlk.resources.framework.app;
 
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.vlk.resources.framework.model.Command;
 import ru.vlk.resources.framework.model.Resource;
 import ru.vlk.resources.framework.services.ArgumentParser;
@@ -11,13 +13,24 @@ import ru.vlk.resources.framework.services.impl.SimpleResourceWriter;
 import ru.vlk.resources.framework.util.ResourceParsingException;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Properties;
+
+import static ru.vlk.resources.framework.util.Util.*;
 
 public class App {
+
+    final static Logger logger = LoggerFactory.getLogger(App.class);
 
     private ArgumentParser argumentParser;
     private ResourceWriter resourceWriter;
     private ResourceManager resourceManager;
+
+    private Properties properties;
+    private String PROPERTY_PATH = "META-INF/framework.properties";
+    private String PROPERTY_PATH_ALTERNATIVE = "src/main/resources/META-INF/framework.properties";
+    private String INDEX_PATH_PROPERTY = "index.default.directory";
 
     public static void main(String[] args) {
         String result = null;
@@ -25,7 +38,7 @@ public class App {
             App app = new App();
             result = app.executeCommand(args);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getClass()  + " : " + e.getMessage());
         }
         System.out.println(result);
     }
@@ -35,10 +48,11 @@ public class App {
     }
 
     private void init() throws IOException {
-        //load props, directories, indexes
+        //loadProperties props, directories, indexes
+        loadProperties();
         argumentParser = new SimpleArgumentParser();
         resourceWriter = new SimpleResourceWriter();
-        resourceManager = new ResourceManagerImpl(new File("conf"));
+        resourceManager = new ResourceManagerImpl(new File(properties.getProperty(INDEX_PATH_PROPERTY)));
     }
 
     public String executeCommand(String[] args) {
@@ -50,8 +64,8 @@ public class App {
                 try {
                     result = resourceWriter.writeResourcesAsString(resourceManager.search(term));
                 } catch (IOException | ParseException e) {
-                    //TODO: handle
                     e.printStackTrace();
+                    error(logger, e);
                 }
                 break;
             case SEARCH_ALL:
@@ -63,12 +77,23 @@ public class App {
                     resourceManager.addResource(resource);
                     result = "add";
                 } catch (IOException | ResourceParsingException e) {
-                    //TODO:handle error
-                    e.printStackTrace();
+                    error(logger, e);
                     result = "error";
                 }
                 break;
         }
         return result;
+    }
+
+    private Properties loadProperties() throws IOException {
+        properties = new Properties();
+        FileInputStream fileIS = null;
+        if (new File(PROPERTY_PATH).exists()) {
+            fileIS = new FileInputStream(PROPERTY_PATH);
+        } else {
+            fileIS = new FileInputStream(PROPERTY_PATH_ALTERNATIVE);
+        }
+        properties.load(fileIS);
+        return properties;
     }
 }
